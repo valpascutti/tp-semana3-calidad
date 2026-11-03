@@ -1,0 +1,29 @@
+#!/bin/sh
+# Pre-commit: formatter, linter y tests, en ese orden. Si uno falla, el commit se cancela.
+
+echo "==> [1/3] Formatter (Spotless)"
+if ! mvn -q spotless:check; then
+  echo "[FALLO] El codigo no respeta el formato. Ejecuta: mvn spotless:apply"
+  echo "Commit cancelado."
+  exit 1
+fi
+echo "[OK] Formato correcto"
+
+echo "==> [2/3] Linter (Checkstyle)"
+if ! mvn -q checkstyle:check; then
+  echo "[FALLO] Checkstyle encontro violaciones. Corregilas antes de commitear."
+  echo "Commit cancelado."
+  exit 1
+fi
+echo "[OK] Sin violaciones de estilo"
+
+echo "==> [3/3] Tests unitarios"
+if ! mvn -q test; then
+  echo "[FALLO] Hay tests que no pasan."
+  echo "Commit cancelado."
+  exit 1
+fi
+echo "[OK] Todos los tests pasan"
+
+echo "Pre-commit superado. Commit permitido."
+exit 0
